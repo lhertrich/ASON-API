@@ -1,0 +1,16 @@
+params:
+  _target_: src.models.phikon_segmentation.PhikonSegmentationModel
+  classes: 2
+  patch_size: 16
+  embed_dim: 1024
+  decoder_channels: [512, 256, 128, 64]
+  pretrained_name: owkin/phikon-v2
+  freeze_encoder: true
+
+training:
+  gradient_clipping: True
+  max_norm: 1.0
+  learning_rate: 1e-3
+  weight_decay: 1e-2
+
+name: phikon_v2_frozen_2c

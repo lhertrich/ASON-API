@@ -1,0 +1,17 @@
+params:
+  _target_: sklearn.ensemble.RandomForestClassifier
+  n_estimators: 100
+  max_depth: 20
+  min_samples_split: 100
+  min_samples_leaf: 50
+  max_features: sqrt
+  n_jobs: -1
+  random_state: 42
+  class_weight: balanced
+  verbose: 1
+
+name: random_forest_2c_balanced
+
+num_classes: 2
+
+sample_ratio: 1.0

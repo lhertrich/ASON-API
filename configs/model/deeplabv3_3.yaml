@@ -1,0 +1,16 @@
+params:
+  _target_: segmentation_models_pytorch.DeepLabV3
+  encoder_name: resnet34
+  encoder_depth: 5
+  encoder_weights: imagenet
+  in_channels: 3
+  classes: 3
+
+training:
+  gradient_clipping: True
+  max_norm: 1.0
+  learning_rate: 1e-4
+  weight_decay: 1e-2
+
+
+name: deeplabv3_resnet34_imagenet_3c

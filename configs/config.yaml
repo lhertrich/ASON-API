@@ -1,0 +1,22 @@
+defaults:
+  - model: unet_2
+
+data:
+  data_dir: data/cnn_training/resized_images
+  mask_dir: data/cnn_training/resized_masks
+  num_augmentations: 10
+
+training:
+  epochs: 50
+  batch_size: 8
+
+checkpoint_path: checkpoints
+
+wandb:
+  use: True
+  project: rp-tissue_segmentation
+
+seed: 42
+
+eval:
+  f1_avg: macro

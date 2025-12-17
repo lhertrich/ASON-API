@@ -1,0 +1,14 @@
+params:
+  _target_: src.models.unet.UNet
+  in_channels: 3
+  classes: 2
+  base_filters: 64
+
+training:
+  gradient_clipping: True
+  max_norm: 1.0
+  learning_rate: 1e-4
+  weight_decay: 1e-2
+
+
+name: unet_no_weights_2c
