@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from src.pipeline.segment import SegmentationModule
 from src.pipeline.layer_detection import LayerDetectionModule
+from src.qupath.bridge_functions import mask_to_polygons
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,25 +31,50 @@ async def health():
 @app.post("/segment")
 async def segment(request: Request):
     seg_module = request.app.state.segmentation
-    # Receive raw pixels from QuPath
+
     data = await request.body()
-    # Assuming pixels are sent as a byte array (PNG/JPG)
     nparr = np.frombuffer(data, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    # Hardcoded task for this example; you can pass this in headers or params
-    task = request.query_params.get("task", "nuclei")
-    
+    task = request.query_params.get("task", "tissue")
+    mode = request.query_params.get("mode", "overlay")
+
+    if task != "tissue":
+        return {"error": "Only tissue supported in this endpoint"}
+
+    mask = seg_module.segment_tissue(img_rgb)  # binary mask (H,W)
+
+    polygons = mask_to_polygons(mask)
+
     features = []
-    if task == 'tissue':
-            mask = seg_module.segment_tissue(img_rgb)
-        # ... (use the mask_to_features logic from before)
-    else:
-        data_dict = seg_module.segment_nuclei(img_rgb)
-        # ... (use the stardist_to_features logic from before)
-        
-    return {"type": "FeatureCollection", "features": features}
+    for poly in polygons:
+        features.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [poly]
+            },
+            "properties": {
+                "class": "Tissue",
+                "mode": mode
+            }
+        })
+
+    return {
+        "type": "FeatureCollection",
+        "features": features
+    }
+
+@app.post("/layer_detection")
+async def layer_detection(request: Request):
+    layer_detection_module = request.app.state.layer_detection
+    data = await request.body()
+    nparr = np.frombuffer(data, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    layers = layer_detection_module.detect_layers(img_rgb)
+    return {"layers": layers}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
